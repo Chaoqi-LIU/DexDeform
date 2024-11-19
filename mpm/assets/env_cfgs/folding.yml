@@ -21,7 +21,7 @@ SHAPES:
     n_particles: 10000
 
 RENDERER:
-  image_res: (128, 128)
+  image_res: (512, 512)
 
 
 MANIPULATORS:

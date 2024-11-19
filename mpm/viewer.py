@@ -105,18 +105,20 @@ class Viewer:
     def set_view(self, view_name):
         self.env.renderer.lookat(**self.views[view_name])
 
-    def render_state_multiview(self, spp=10, primitive=1, shape=1, n_views=2):
+    def render_state_multiview(self, spp=10, primitive=1, shape=1, n_views=2, concat=True):
         images = []
 
         for view_name in self.view_order[:n_views]:
             self.set_view(view_name)
             images.append(self.render(spp, primitive, shape))
 
-        img = np.concatenate(images[:2], axis=1)
-        if n_views == 4:
-            img = np.concatenate((img, np.concatenate(images[2:], axis=1)), axis=0)
-
-        return img
+        if concat:
+            img = np.concatenate(images[:2], axis=1)
+            if n_views == 4:
+                img = np.concatenate((img, np.concatenate(images[2:], axis=1)), axis=0)
+            return img
+        else:
+            return images
 
     def render_state_as_pcd(self, mode="human"):
         points = self.env.simulator.get_state(0)[0]

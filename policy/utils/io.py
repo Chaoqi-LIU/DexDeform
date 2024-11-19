@@ -21,14 +21,14 @@ ENV_NAMES = [
 ENV_DIR = "/".join(mpm.__file__.split("/")[:-3])
 DATA_DIR = os.path.join(ENV_DIR, "data")
 
-# TODO: clean up this mess and correct the paths
-get_env_path = lambda x: os.path.join(ENV_DIR, x)
-get_tmp_path = lambda x: os.path.join(DATA_DIR, "tmp", x)
-get_demo_path = lambda x: os.path.join(DATA_DIR, "demos", x)
-get_preproc_demo_path = lambda x: os.path.join(DATA_DIR, "preproc_demos", x)
-get_script_path = lambda x: os.path.join(ENV_DIR, "proj_hand/scripts", x)
-get_asset_path = lambda x: os.path.join(ENV_DIR, "proj_hand/assets", x)
-raise NotImplementedError("TODO: clean up this mess and correct the paths")
+# # TODO: clean up this mess and correct the paths
+# get_env_path = lambda x: os.path.join(ENV_DIR, x)
+# get_tmp_path = lambda x: os.path.join(DATA_DIR, "tmp", x)
+# get_demo_path = lambda x: os.path.join(DATA_DIR, "demos", x)
+# get_preproc_demo_path = lambda x: os.path.join(DATA_DIR, "preproc_demos", x)
+# get_script_path = lambda x: os.path.join(ENV_DIR, "proj_hand/scripts", x)
+# get_asset_path = lambda x: os.path.join(ENV_DIR, "proj_hand/assets", x)
+# raise NotImplementedError("TODO: clean up this mess and correct the paths")
 
 
 class CPU_Unpickler(pickle.Unpickler):

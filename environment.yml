@@ -4,8 +4,13 @@ channels:
   - iopath
   - pytorch
   - conda-forge
+  - menpo
   - defaults
 dependencies:
+  - python=3.9
+  - glew
+  - mesalib
+  - glfw3
   - _libgcc_mutex=0.1=main
   - _openmp_mutex=5.1=1_gnu
   - anyio=3.5.0=py39h06a4308_0
