@@ -49,6 +49,7 @@ RIGHT_HAND_EDGES = np.array([
     [ 0,  2],[ 2,  0],[ 0, 12],[12,  0],[ 0, 16],[16,  0]])
 DEMO_DIR = f"data/{ENV_NAME}"
 SAVE_DIR = f"data/processed_{ENV_NAME}"
+NUM_VISUALIZE = 5
 
 
 def dict_apply(
@@ -72,67 +73,72 @@ if __name__ == '__main__':
     demo_files.sort()
     print(f"Found {len(demo_files)} demos")
 
-    for demo_file in demo_files:
+    for idx, demo_file in enumerate(demo_files):
         print(f"Processing {demo_file}")
 
         processed_demo = {
             "scene_points": [],
             "scene_points_velocity": [],
             "hand_points": [],
-            "hand_edges": [],
+            "hand_edges": RIGHT_HAND_EDGES,
             "action": [],
-            "images": {
-                "front": [],
-                "side": [],
-                "top": [],
-                "bot": [],
-            }
         }
 
         demo_data = load_gzip_file(demo_file)
+        downsample_indices = None
         for step_data in demo_data["states"]:
             scene_points = np.asarray(step_data[0])
             scene_points_velocity = np.asarray(step_data[1])
             hand_points = np.stack(step_data[4:-2])[:, :3]
-            hand_edges = RIGHT_HAND_EDGES
 
             # sample scene points
-            _, downsample_indices = sample_farthest_points(
-                torch.from_numpy(scene_points).unsqueeze(0).cuda(),
-                K=NUM_SCENE_POINTS, 
-                random_start_point=True
-            )
-            downsample_indices = downsample_indices.cpu().numpy().squeeze(0)
+            if downsample_indices is None:
+                _, downsample_indices = sample_farthest_points(
+                    torch.from_numpy(scene_points).unsqueeze(0).cuda(),
+                    K=NUM_SCENE_POINTS, 
+                    random_start_point=True
+                )
+                downsample_indices = downsample_indices.cpu().numpy().squeeze(0)
             scene_points = scene_points[downsample_indices]
             scene_points_velocity = scene_points_velocity[downsample_indices]
 
             processed_demo["scene_points"].append(scene_points)
             processed_demo["scene_points_velocity"].append(scene_points_velocity)
             processed_demo["hand_points"].append(hand_points)
-            processed_demo["hand_edges"].append(hand_edges)
 
-        env = make(env_name=ENV_NAME, sim_cfg={'max_steps': 4400})
-        viewer = Viewer(env)
-        viewer.refresh_views("hand_centric")
-        viewer.set_view("side")
-
-        images = viewer.render_state_multiview(n_views=4, concat=False)
-        processed_demo["images"]["front"].append(images[0])
-        processed_demo["images"]["side"].append(images[1])
-        processed_demo["images"]["top"].append(images[2])
-        processed_demo["images"]["bot"].append(images[3])
         for action in demo_data["actions"]:
             processed_demo["action"].append(np.asarray(action[0]))  # single hand
-            env.simulator.step(action)
+
+        if idx < NUM_VISUALIZE:
+
+            processed_demo["images"] = {
+                "front": [],
+                "side": [],
+                "top": [],
+                "bot": [],
+            }
+            
+            env = make(env_name=ENV_NAME, sim_cfg={'max_steps': 4400})
+            viewer = Viewer(env)
+            viewer.refresh_views("hand_centric")
+            viewer.set_view("side")
+
             images = viewer.render_state_multiview(n_views=4, concat=False)
             processed_demo["images"]["front"].append(images[0])
             processed_demo["images"]["side"].append(images[1])
             processed_demo["images"]["top"].append(images[2])
             processed_demo["images"]["bot"].append(images[3])
+            for action in demo_data["actions"]:
+                env.simulator.step(action)
+                images = viewer.render_state_multiview(n_views=4, concat=False)
+                processed_demo["images"]["front"].append(images[0])
+                processed_demo["images"]["side"].append(images[1])
+                processed_demo["images"]["top"].append(images[2])
+                processed_demo["images"]["bot"].append(images[3])
         
         processed_demo = dict_apply(
             processed_demo,
-            lambda x: np.stack(x),
+            lambda x: np.array(x),
         )
 
         print("================================")
@@ -145,11 +151,14 @@ if __name__ == '__main__':
         print("================================")
 
         # save
-        save_file = os.path.join(SAVE_DIR, os.path.basename(demo_file))
+        save_file = os.path.join(SAVE_DIR, str(idx) + ("vis" if idx < NUM_VISUALIZE else ""))
         print(f"Saving to {save_file}")
         np.save(save_file, processed_demo)
         
         # cleanup (this is necessary)
-        del env
-        del viewer
-        gc.collect()
+        try:
+            del env
+            del viewer
+            gc.collect()
+        except:
+            pass
