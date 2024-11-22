@@ -45,12 +45,12 @@ if __name__ == '__main__':
             np.concatenate([top_images, bot_images], axis=2)
         ], axis=1)
         imageio.mimsave("test.gif", concat_images, fps=20)
-        # exit(1)
+        exit(1)
 
         for i in range(len(scene_points)):
             visualize_scene(
                 scene_points[i],
                 hand_points[i],
-                hand_edges[i],
+                hand_edges,
             )
 
