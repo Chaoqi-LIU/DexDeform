@@ -1,4 +1,6 @@
 data
+ckpts
+imgs
 *.DS_Store
 
 

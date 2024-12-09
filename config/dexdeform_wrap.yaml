@@ -1,0 +1,49 @@
+dataset_config:
+  data_name: "dexdeform_wrap"
+  data_dir: "/mnt/nvme1n1p1/baoyu/cs598graph/data"
+  prep_data_dir: "/mnt/nvme1n1p1/baoyu/cs598graph/prep_data"
+  device: "cuda:0"
+
+  verbose: False
+
+  n_his: 4
+  n_future: 3
+  
+  randomness: 
+    use: True # set False for visualization; True for training to avoid overfitting
+    state_noise:
+      train: 0.05
+      valid: 0.0
+      test: 0.0
+      
+  n_obj_ptcls: 1000
+
+
+model_config:
+  n_his: 4      # same as dataset config
+  pstep: 3      # propagation steps
+  latent_dim: 64
+  cradius: 0.1
+  nngbrs: 5
+
+
+train_config:
+  out_dir: "/mnt/nvme1n1p1/baoyu/cs598graph/dynamics"
+  phases: ["train", "valid"]
+  num_workers: 8
+  random_seed: 42
+  verbose: False
+
+  batch_size: 128 # 64, 128, 256 or 512. # smaller, faster; bigger, more stable
+  n_epochs: 100
+  n_iters_per_epoch: 
+    train: 1000
+    valid: 100
+  
+  lr: 0.001
+  log_interval: 50
+
+
+rollout_config:
+  out_dir: "/mnt/nvme1n1p1/baoyu/cs598graph/rollout"
+  rollout_steps: 100

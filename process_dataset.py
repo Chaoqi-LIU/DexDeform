@@ -32,7 +32,7 @@ where
     W: image width, set in the config yaml, default 512
 """
 
-ENV_NAME = "folding"
+ENV_NAME = "wrap"
 NUM_SCENE_POINTS = 1024
 RIGHT_HAND_EDGES = np.array([
     [17, 18],[18, 17],[16, 17],[17, 16],[16, 18],[18, 16],
