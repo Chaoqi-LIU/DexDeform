@@ -32,11 +32,30 @@ class PointcloudEncoder(nn.Module):
             nn.LayerNorm(out_channels) if use_layer_norm else nn.Identity()
         )
 
-    def forward(self, points: torch.Tensor) -> torch.Tensor:
-        return self.projector(self.encoder(points))
+    def forward(self, 
+        particles: torch.Tensor,        # (B, N, T, 3)
+        action: torch.Tensor,           # (B, N, 3)
+        particle_types: torch.Tensor,   # (B, N)
+    ) -> torch.Tensor:
+        B, N, T, _ = particles.size()
+        points = torch.cat([
+            particles.view(B, N, T * 3),
+            action,
+            particle_types.view(B, N, 1)
+        ], dim=-1)
+        print(points.shape)
+        pred_points = self.projector(self.encoder(points))  # (B, N, 3)
+        pred_points[particle_types == 1] = particles[particle_types == 1, :, -1]
+        return pred_points
 
 
 if __name__ == '__main__':
-    encoder = Dp3PointcloudEncoder(3 + 1 + 3, 3)
-    points = torch.rand(5, 32, 3 + 1 + 3)
-    print(encoder(points).shape)
+    B = 4
+    N = 32
+    T = 3
+    encoder = PointcloudEncoder(3 * T + 3 + 1, 3)
+    points = torch.randn(B, N, T, 3)
+    action = torch.randn(B, N, 3)
+    particle_types = torch.randint(0, 2, (B, N))
+    output = encoder(points, action, particle_types)
+    print(output.shape)
